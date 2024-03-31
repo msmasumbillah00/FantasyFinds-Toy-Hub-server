@@ -66,6 +66,12 @@ async function run() {
             res.send(result)
 
         })
+        app.post('/products', async (req, res) => {
+            // console.log(req.body)
+            const result = await productsColloction.insertOne(req.body);
+            res.send(result)
+
+        })
         app.get('/products', async (req, res) => {
             const page = Number(req.query.page) || 0;
             const limit = Number(req.query.limit) || 12;
@@ -97,7 +103,7 @@ async function run() {
             // console.log("comebac after verify", decoded)
             // console.log(req.headers.authorization)
 
-            if (decoded.uid !== req.query.uid) {
+            if (decoded.uid !== req.query.user) {
                 res.status(403).send({ error: true, message: "Unauthorized user" });
 
             }
@@ -136,10 +142,11 @@ async function run() {
 
         app.get("/orders", verifyJWT, async (req, res) => {
             const decoded = req.decoded;
+            // console.log(decoded)
             // console.log("comebac after verify", decoded)
             // console.log(req.headers.authorization)
 
-            if (decoded.uid !== req.query.uid) {
+            if (decoded.uid !== req.query.user) {
                 res.status(403).send({ error: true, message: "Unauthorized user" });
 
             }
@@ -197,7 +204,10 @@ async function run() {
 
 
         app.get('/', (req, res) => {
-            res.send("running")
+            res.send("running my foot")
+        })
+        app.get('/masum', (req, res) => {
+            res.send("running masum")
         })
 
 
