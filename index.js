@@ -86,6 +86,33 @@ async function run() {
             res.send(result)
 
         })
+
+        app.get('/search', async (req, res) => {
+            const query = req.query.word;
+
+            const cursor = productsColloction.find({
+                $or: [
+                    { title: { $regex: query, $options: 'i' } },
+                    { discrip: { $regex: query, $options: 'i' } }, // Replace field2 with the actual field name
+                    {
+                        group: {
+                            $elemMatch: { $regex: query, $options: 'i' }
+                        }
+                    },  // Replace field3 with the actual field name
+                    {
+                        colors_family: {
+                            $elemMatch: { $regex: query, $options: 'i' }
+                        }
+                    }  // Replace field3 with the actual field name
+                    // Add more fields as needed
+                ]
+            });
+            const results = await cursor.toArray()
+            // console.log(query)
+            res.send(results);
+
+        })
+
         app.get("/products/:Id", async (req, res) => {
             const query = { _id: new ObjectId(req.params.Id) }
             const result = await productsColloction.findOne(query);
@@ -184,7 +211,7 @@ async function run() {
 
         })
         app.get('/catagories/:id', async (req, res) => {
-            console.log(req.params.id);
+            // console.log(req.params.id);
             const catagoriquary = { _id: new ObjectId(req.params.id) }
             const catagoriDetails = await catagoriColloction.findOne(catagoriquary);
 
