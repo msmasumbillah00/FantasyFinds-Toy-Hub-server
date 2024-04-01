@@ -88,19 +88,32 @@ async function run() {
         })
 
         app.get('/search', async (req, res) => {
-            const query = req.query.word.split(" ");
+            const query = req.query.word.split(" "); // Split the query string into an array of words
 
+            // Construct an array of $or conditions for each word in the query
             const orConditions = query.map(word => ({
                 $or: [
-                    { group: { $elemMatch: { $regex: word, $options: 'i' } } },
-                    { colors_family: { $elemMatch: { $regex: word, $options: 'i' } } },
-                    { title: { $regex: word, $options: 'i' } },
-                    { discrip: { $regex: word, $options: 'i' } }
+                    { group: { $elemMatch: { $regex: word, $options: 'i' } } }, // Match word in the 'group' array
+                    { colors_family: { $elemMatch: { $regex: word, $options: 'i' } } }, // Match word in the 'colors_family' array
+                    { title: { $regex: word, $options: 'i' } }, // Match word in the 'title' field
+                    { discrip: { $regex: word, $options: 'i' } } // Match word in the 'discrip' field
                 ]
             }));
+
+            // Find documents matching any of the conditions in the $or array
             const cursor = productsColloction.find({ $or: orConditions });
-            const results = await cursor.toArray()
-            // console.log(results)
+
+            // Convert cursor to an array of results
+            let results = await cursor.toArray();
+
+            // Custom sort function based on the position of words in the query
+            results = results.sort((a, b) => {
+                const aIndex = query.findIndex(word => a.title.includes(word));
+                const bIndex = query.findIndex(word => b.title.includes(word));
+                return aIndex - bIndex;
+            });
+
+            // Send the sorted results as the response
             res.send(results);
 
         })
