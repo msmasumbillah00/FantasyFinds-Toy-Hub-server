@@ -88,27 +88,19 @@ async function run() {
         })
 
         app.get('/search', async (req, res) => {
-            const query = req.query.word;
+            const query = req.query.word.split(" ");
 
-            const cursor = productsColloction.find({
+            const orConditions = query.map(word => ({
                 $or: [
-                    { title: { $regex: query, $options: 'i' } },
-                    { discrip: { $regex: query, $options: 'i' } }, // Replace field2 with the actual field name
-                    {
-                        group: {
-                            $elemMatch: { $regex: query, $options: 'i' }
-                        }
-                    },  // Replace field3 with the actual field name
-                    {
-                        colors_family: {
-                            $elemMatch: { $regex: query, $options: 'i' }
-                        }
-                    }  // Replace field3 with the actual field name
-                    // Add more fields as needed
+                    { group: { $elemMatch: { $regex: word, $options: 'i' } } },
+                    { colors_family: { $elemMatch: { $regex: word, $options: 'i' } } },
+                    { title: { $regex: word, $options: 'i' } },
+                    { discrip: { $regex: word, $options: 'i' } }
                 ]
-            });
+            }));
+            const cursor = productsColloction.find({ $or: orConditions });
             const results = await cursor.toArray()
-            // console.log(query)
+            // console.log(results)
             res.send(results);
 
         })
